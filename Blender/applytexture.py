@@ -1,13 +1,14 @@
 import bpy, glob, json, os
 
 def clean_dupes():
-    for obj in bpy.data.objects:
-        for slot in obj.material_slots:
-            if slot.name[-3:].isnumeric():
-                real_material = bpy.data.materials[slot.name[:-4]]
-                wrong_material = slot.material
-                slot.material = real_material
-                bpy.data.materials.remove(wrong_material)
+	for obj in bpy.data.objects:
+		for slot in obj.material_slots:
+			if slot.name[-3:].isnumeric():
+				if bpy.data.materials.get(slot.name[:-4]) == None: continue
+				real_material = bpy.data.materials[slot.name[:-4]]
+				wrong_material = slot.material
+				slot.material = real_material
+				bpy.data.materials.remove(wrong_material)
 
 def main():
 	base_path = ''
