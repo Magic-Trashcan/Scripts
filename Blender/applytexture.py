@@ -52,14 +52,36 @@ def main():
 				with open(base_path + interface.get('ObjectPath').replace('.0', '.json')) as mi_file:
 					mi_json = json.load(mi_file)
 					if type(mi_json) == list:
-						print('Using Material Instance Constant. Skipping...')
-						continue
-					else:
-						mat_path = mi_json.get('Textures').get('L0_Map_C_and_A')
-						if mat_path == None:
-							print('Could not find L0 Map. Skipping...')
+						mic = mi_json[0]
+
+						if mic.get('Type') != 'MaterialInstanceConstant':
+							print('Unrecognised material instance. Skipping...')
 							continue
-						mat_path = mat_path.split('.')[0] + '.png'
+						
+						param_values = mic.get('Properties').get('TextureParameterValues')
+						if param_values == None:
+							print('Could not find Parameter Values. Skipping...')
+							continue
+
+						for value in param_values:
+							if value.get('ParameterInfo').get('Name') in ['L0_Map_C_and_A', 'L0_Map_C', 'Color']:
+								mat_path = value.get('ParameterValue').get('ObjectPath')
+
+						if mat_path == None: 
+							for value in param_values:
+								object_path = value.get('ParameterValue').get('ObjectPath')
+								if '_C' in object_path or '_BC' in object_path:
+									mat_path = object_path
+
+						if mat_path == None: mat_path = param_values[0].get('ParameterValue').get('ObjectPath')
+
+					else: mat_path = mi_json.get('Textures').get('L0_Map_C_and_A')
+
+					if mat_path == None:
+						print('Could not find L0 Map. Skipping...')
+						continue
+
+					mat_path = mat_path.split('.')[0] + '.png'
 					print(f'Texture path resolved to: {mat_path}')
 					mat_path = base_path + mat_path
 
